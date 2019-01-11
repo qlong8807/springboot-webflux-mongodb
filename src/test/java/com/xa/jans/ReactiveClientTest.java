@@ -18,7 +18,7 @@ public class ReactiveClientTest {
 		Mono.just(new Exception("a error")).subscribe(System.out::println, System.err::println,
 				() -> System.out.println("complate"));
 
-		System.out.println("-------------");
+		System.out.println("-------------");//
 		Mono.error(new Exception("a error")).subscribe(System.out::println, System.err::println,
 				() -> System.out.println("complate"));
 
