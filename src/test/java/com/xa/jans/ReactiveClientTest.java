@@ -17,9 +17,12 @@ public class ReactiveClientTest {
 		//subscribe方法支持多个参数，正常数据、错误数据、完成信号。
 		Mono.just(new Exception("a error")).subscribe(System.out::println, System.err::println,
 				() -> System.out.println("complate"));
+<<<<<<< HEAD
 		System.out.println("-------------");
 		Mono.error(new Exception("a error")).subscribe(System.out::println, System.err::println,
 				() -> System.out.println("complate"));
+=======
+>>>>>>> af811ce9f87122a4dea670152434e50f4e9576e9
 	}
 
 	/**
