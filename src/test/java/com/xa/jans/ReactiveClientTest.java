@@ -12,6 +12,13 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveClientTest {
 
+	@Test
+	public void test() {
+		//subscribe方法支持多个参数，正常数据、错误数据、完成信号。
+		Mono.just(new Exception("a error")).subscribe(System.out::println, System.err::println,
+				() -> System.out.println("complate"));
+	}
+
 	/**
 	 * 测试返回Mono
 	 * 
@@ -44,8 +51,7 @@ public class ReactiveClientTest {
 	public void webClientTest3() throws InterruptedException {
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		webClient.get().uri("/times").accept(MediaType.TEXT_EVENT_STREAM) // 1
-				.retrieve().bodyToFlux(String.class)
-				.log() // 这次用log()代替doOnNext(System.out::println)来查看每个元素
+				.retrieve().bodyToFlux(String.class).log() // 这次用log()代替doOnNext(System.out::println)来查看每个元素
 				.take(10) // 由于/times是一个无限流，这里取前10个，会导致流被取消
 				.blockLast();
 	}
