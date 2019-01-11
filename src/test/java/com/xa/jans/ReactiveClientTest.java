@@ -1,5 +1,7 @@
 package com.xa.jans;
 
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -8,7 +10,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.xa.jans.entity.User;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 public class ReactiveClientTest {
 
@@ -21,7 +25,37 @@ public class ReactiveClientTest {
 		System.out.println("-------------");
 		Mono.error(new Exception("a error")).subscribe(System.out::println, System.err::println,
 				() -> System.out.println("complate"));
-
+	}
+	private Flux<String> getZipDescFlux(){
+		String desc = "Zip two sources together, that is to say wait for all the sources to emit one element and combine these elements once into a Tuple2";
+		return Flux.fromArray(desc.split("\\s+"));//将英文用空格拆分为字符串流
+	}
+	/**
+	 * zip - 一对一合并
+	 * 它对两个Flux/Mono流每次各取一个元素，合并为一个二元组（Tuple2）
+	 * Flux的zip方法接受Flux或Mono为参数，Mono的zip方法只能接受Mono类型的参数。
+	 * 
+	 * 我们希望将一句话拆分为一个一个的单词并以每200ms一个的速度发出，除了flatMap和delayElements的组合外，还可以如下操作
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void testZipOperators() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(1);//不使用它的话，测试方法所在的线程会直接返回而不会等待数据流发出完毕
+		Flux.zip(getZipDescFlux(), 
+				Flux.interval(Duration.ofMillis(200)))//使用Flux.interval声明一个每200ms发出一个元素的long数据流；因为zip操作是一对一的，故而将其与字符串流zip之后，字符串流也将具有同样的速度；
+		.subscribe(t -> System.out.println(t.getT1()),null,countDownLatch::countDown);//zip之后的流中元素类型为Tuple2，使用getT1方法拿到字符串流的元素；定义完成信号的处理为countDown
+		countDownLatch.await(10, TimeUnit.SECONDS);
+	}
+	/**
+	 * 同上
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void testZipOperators2() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(1);//不使用它的话，测试方法所在的线程会直接返回而不会等待数据流发出完毕
+		Flux<Tuple2<String, Long>> zipWith = getZipDescFlux().zipWith(Flux.interval(Duration.ofMillis(200)));
+		zipWith.subscribe(a -> System.out.println(a),null,countDownLatch::countDown);
+		countDownLatch.await(10, TimeUnit.SECONDS);
 	}
 
 	/**
